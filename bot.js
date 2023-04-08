@@ -60,7 +60,7 @@ client.on('interactionCreate', async (interaction) => {
 				embeds: [{
 					title: 'Leaderboard 🌍',
 					description: formatted.join('\n'),
-					footer: { text: 'SpotAI v0.0.1', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
+					footer: { text: 'SpotAI v1.0.0', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
 				}],
 			});
 		}
@@ -73,7 +73,7 @@ client.on('interactionCreate', async (interaction) => {
 				image: {
 					url: 'attachment://SpotAI_FaceDev.png',
 				},
-				footer: { text: 'SpotAI v0.0.1', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
+				footer: { text: 'SpotAI v1.0.0', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
 			};
 
 			await interaction.createFollowup({
