@@ -86,18 +86,18 @@ client.on('interactionCreate', async (interaction) => {
 		if (interaction.data.name === 'spotai') {
 
 			const level = interaction.data.options.getString('level', false);
-			const image = await draw([level] || undefined);
-			const ids = [String(Math.random()), String(Math.random())];
+			let image = await draw([level] || undefined);
+			const ids = [String(Math.random()), String(Math.random()), String(Math.random())];
 			const embed = {
 				image: {
 					url: 'attachment://SpotAI_FaceDev.png',
 				},
 				footer: footer,
 			};
-
-			await interaction.createFollowup({
+			let file = [{ 'name': 'SpotAI_FaceDev.png', 'contents': image.buffer }];
+			const startingEmbed = {
 				embeds: [embed],
-				files: [{ 'name': 'SpotAI_FaceDev.png', 'contents': image.buffer }],
+				files: file,
 				components: [
 					{
 						type: ComponentTypes.ACTION_ROW, components: [
@@ -116,7 +116,22 @@ client.on('interactionCreate', async (interaction) => {
 						],
 					},
 				],
-			});
+			};
+
+			await interaction.createFollowup(startingEmbed);
+
+			const resetComponents = [
+				{
+					type: ComponentTypes.ACTION_ROW, components: [
+						{
+							type: ComponentTypes.BUTTON,
+							style: 2,
+							emoji: { name: '🔄' },
+							customID: ids[2],
+						},
+					],
+				},
+			];
 
 			const collector = new InteractionCollector(client, {
 				time: 60000,
@@ -132,6 +147,19 @@ client.on('interactionCreate', async (interaction) => {
 				if (!(btn instanceof ComponentInteraction)) return;
 				if (!ids.includes(btn.data.customID)) return;
 
+				/** RESTART BUTTON */
+				if(btn.data.customID === ids[2]){
+					await btn.deferUpdate();
+
+					image = await draw([level] || undefined);
+
+					file[0].contents = image.buffer;
+					startingEmbed.files = file;
+
+					await interaction.editOriginal(startingEmbed)
+
+					return;
+				}
 				const scoreToInc = parseInt(image.level);
 				const isAI = image.IS_AI;
 				const chosenOption = ids.indexOf(btn.data.customID);
@@ -151,9 +179,7 @@ client.on('interactionCreate', async (interaction) => {
                 '```';
 
 				await btn.deferUpdate();
-				await btn.editOriginal({ embeds: [{ ...embed, color, description: content }], components: [] });
-
-				return collector.stop('limit');
+				await btn.editOriginal({ embeds: [{ ...embed, color, description: content }], components: resetComponents });
 			});
 		}
 	}
