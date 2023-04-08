@@ -125,7 +125,7 @@ client.on('interactionCreate', async (interaction) => {
 				const data = await helper.db_fetch({ id: interaction.member.id });
 
 				const content = '```' +
-                `TROPHIES   - ${data.score} 🏆\n` +
+                `TROPHIES   - ${data.score || 0} 🏆\n` +
                 `GOT        - ${score < 0 ? score : `+${score}`} 🏆\n` +
                 `WHICH      - The image #${image.IS_AI + 1} is AI-generated.\n` +
                 `PROMPT     - ${image.prompt}\n` +
