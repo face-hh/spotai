@@ -12,6 +12,17 @@ const helper = new Helper({ collection: 'memory' });
 
 const footer = { text: `SpotAI v${package.version}`, iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' };
 
+const timers = {};
+
+function startTimer(collector, id) {
+  if (timers[id]) clearTimeout(timers[id]);
+
+  timers[id] = setTimeout(() => {
+    collector.stop('time');
+  }, 60000);
+}
+
+
 client.on('ready', async () => {
 	console.log('Ready as', client.user.tag);
 
@@ -134,9 +145,10 @@ client.on('interactionCreate', async (interaction) => {
 			];
 
 			const collector = new InteractionCollector(client, {
-				time: 60000,
 				filter: (button) => button.member.id === interaction.member.id,
 			});
+
+			startTimer(collector, ids[2]);
 
 			collector.on('end', (_, reason) => {
 				if (reason === 'time') {
@@ -146,6 +158,8 @@ client.on('interactionCreate', async (interaction) => {
 			collector.on('collect', async (btn) => {
 				if (!(btn instanceof ComponentInteraction)) return;
 				if (!ids.includes(btn.data.customID)) return;
+
+				startTimer(collector, ids[2]);
 
 				/** RESTART BUTTON */
 				if(btn.data.customID === ids[2]){
@@ -158,6 +172,7 @@ client.on('interactionCreate', async (interaction) => {
 
 					await interaction.editOriginal(startingEmbed)
 
+					startTimer(collector, ids[2]);
 					return;
 				}
 				const scoreToInc = parseInt(image.level);
