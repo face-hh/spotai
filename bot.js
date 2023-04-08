@@ -5,9 +5,12 @@ const { InteractionCollector } = require('oceanic-collectors');
 
 const draw = require('./index');
 const Helper = require('./Database');
+const package = require('./package.json');
 
 const client = new Client({ auth: process.env.TOKEN });
 const helper = new Helper({ collection: 'memory' });
+
+const footer = { text: `SpotAI v${package.version}`, iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' };
 
 client.on('ready', async () => {
 	console.log('Ready as', client.user.tag);
@@ -37,6 +40,11 @@ client.on('ready', async () => {
 			name: 'leaderboard',
 			description: 'See the SpotAI leaderboard.',
 		},
+		{
+			type: ApplicationCommandTypes.CHAT_INPUT,
+			name: 'help',
+			description: 'Information about how the game was made!',
+		},
 	]);
 });
 
@@ -60,8 +68,19 @@ client.on('interactionCreate', async (interaction) => {
 				embeds: [{
 					title: 'Leaderboard 🌍',
 					description: formatted.join('\n'),
-					footer: { text: 'SpotAI v1.0.0', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
+					footer: footer,
 				}],
+			});
+		}
+		if (interaction.data.name === 'help') {
+			interaction.createFollowup({
+				"embeds": [
+					{
+					  "title": `Help`,
+					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nBase code made in **2 days** :)`,
+					  "color": 0x00FFFF
+					}
+				  ],
 			});
 		}
 		if (interaction.data.name === 'spotai') {
@@ -73,7 +92,7 @@ client.on('interactionCreate', async (interaction) => {
 				image: {
 					url: 'attachment://SpotAI_FaceDev.png',
 				},
-				footer: { text: 'SpotAI v1.0.0', iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' },
+				footer: footer,
 			};
 
 			await interaction.createFollowup({
