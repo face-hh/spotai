@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.11.2",
     "dotenv": "^16.0.3",
     "mongodb": "^5.2.0",
     "oceanic-collectors": "^1.0.7",

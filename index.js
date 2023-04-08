@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -6,12 +6,15 @@ const crypto = require('crypto');
 const ASSET_DIR = path.join(__dirname, 'assets');
 const AI_DIR = path.join(ASSET_DIR, 'ai');
 const HUMAN_DIR = path.join(ASSET_DIR, 'human');
+const FONT_DIR = path.join(ASSET_DIR, 'arial.ttf');
 const BACKGROUND = path.join(ASSET_DIR, 'background.png');
 
 const WIDTH = 1920;
 const HEIGHT = 1080;
 
 const IMAGE_SIZE = 874;
+
+registerFont(FONT_DIR, { family: 'Arial' })
 
 const cropImage = (image) => {
 	const canvas = createCanvas(874, 874);
@@ -88,7 +91,7 @@ const drawImagePair = async (setLevel) => {
 	ctx.drawImage(croppedHumanImage, HUMAN_POS.x, HUMAN_POS.y, IMAGE_SIZE, IMAGE_SIZE);
 	ctx.drawImage(backgroundImage, 0, 0);
 
-	ctx.font = '45px Arial';
+	ctx.font = '45px "Arial"';
 	ctx.fillStyle = '#ffffff';
 	ctx.fillText(`LEVEL ${level}`, 1650, 100);
 
