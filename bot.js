@@ -77,7 +77,7 @@ client.on('interactionCreate', async (interaction) => {
 				"embeds": [
 					{
 					  "title": `Help`,
-					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nBase code made in **2 days** :)`,
+					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nBase code made in **2 days** :)`,
 					  "color": 0x00FFFF
 					}
 				  ],
