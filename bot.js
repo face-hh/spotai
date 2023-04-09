@@ -101,6 +101,9 @@ client.on('interactionCreate', async (interaction) => {
 			const user = interaction.data.options.getUser("player", false) || interaction.user;
 			const data = await helper.db_fetch({ id: user.id });
 
+			if(!data.gamesWon || !data.gamesLost) return interaction.createFollowup({ content: 'User has old structure, let them know to play a game (`/spotai`) and try this command again.' })
+			
+			
 			interaction.createFollowup({
 				embeds: [{
 					thumbnail: { url: user.avatarURL('png') },
