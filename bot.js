@@ -11,6 +11,8 @@ const client = new Client({ auth: process.env.TOKEN });
 const helper = new Helper({ collection: 'memory' });
 
 const footer = { text: `SpotAI v${package.version}`, iconURL: 'https://cdn.discordapp.com/attachments/945308137932599348/1094162158348148797/logo.png' };
+const trophyEmoji = '<:trophy:1094520327071076402>';
+const lightningboltEmoji = '<:lightningbolt:1094527157172183115>';
 
 const timers = {};
 
@@ -48,6 +50,18 @@ client.on('ready', async () => {
 		},
 		{
 			type: ApplicationCommandTypes.CHAT_INPUT,
+			name: 'profile',
+			description: 'Check out analytics about yourself, flex them on others, or feel inferior by checking others\' profiles!',
+			options: [
+				{
+					type: ApplicationCommandOptionTypes.USER,
+					name: 'player',
+					description: 'The player that you want to get the data of.',
+				},
+			],
+		},
+		{
+			type: ApplicationCommandTypes.CHAT_INPUT,
 			name: 'leaderboard',
 			description: 'See the SpotAI leaderboard.',
 		},
@@ -71,7 +85,7 @@ client.on('interactionCreate', async (interaction) => {
 			const formatted = await Promise.all(leaderboard.map(async (el, i) => {
 
 				const user = await client.rest.users.get(el.id);
-				return `\`${i + 1}.\` ${el.score.toLocaleString()} \\🏆 - ${user.username}`;
+				return `\`${i + 1}.\` ${el.score.toLocaleString()} ${trophyEmoji} - ${user.username}`;
 
 			}));
 
@@ -79,6 +93,37 @@ client.on('interactionCreate', async (interaction) => {
 				embeds: [{
 					title: 'Leaderboard 🌍',
 					description: formatted.join('\n'),
+					footer: footer,
+				}],
+			});
+		}
+		if (interaction.data.name === 'profile') {
+			const user = interaction.data.options.getUser("player", false) || interaction.user;
+			const data = await helper.db_fetch({ id: user.id });
+
+			interaction.createFollowup({
+				embeds: [{
+					thumbnail: { url: user.avatarURL('png') },
+					title: user.tag,
+					url: 'https://youtube.com/facedevstuff',
+					fields: [
+						{
+							name: 'Trophies',
+							value: `${trophyEmoji} ${data.score.toLocaleString()}`,
+							inline: true
+						},
+						{
+							name: 'Highest streak',
+							value: `${lightningboltEmoji} ${data.highestStreak}`,
+							inline: true
+						},
+						{
+							name: 'Games',
+							value: `\`Won\`: ${data.gamesWon.toLocaleString()}\n\`Lost\`: ${data.gamesLost.toLocaleString()}\n\`Total\`: ${data.gamesPlayed.toLocaleString()}`,
+							inline: true
+						},
+					],
+					description: ``,
 					footer: footer,
 				}],
 			});
@@ -182,16 +227,25 @@ client.on('interactionCreate', async (interaction) => {
 				const color = won ? 0x00ff00 : 0xff0000;
 				const score = won ? scoreToInc : -scoreToInc;
 
-				await helper.db_increase({ id: interaction.member.id, data: { score: score } });
-
 				const data = await helper.db_fetch({ id: interaction.member.id });
 
-				const content = '```' +
-                `TROPHIES   - ${data.score || 0} 🏆\n` +
-                `GOT        - ${score < 0 ? score : `+${score}`} 🏆\n` +
-                `WHICH      - The image #${image.IS_AI + 1} is AI-generated.\n` +
-                `PROMPT     - ${image.prompt}\n` +
-                '```';
+				const currentScore = data.score + score;
+				const streak = won ? data.streak + 1 : 0;
+				const highestStreak = data.highestStreak > streak ? data.highestStreak : streak;
+
+				await helper.db_increase({ id: interaction.member.id, data: {
+					$set: {
+						score: currentScore,
+						streak,
+						highestStreak
+					},
+					$inc: { gamesPlayed: 1, [`games${won ? 'Won' : 'Lost'}`]: 1 }
+				} });
+
+				const content = `**${trophyEmoji} ${currentScore.toLocaleString()}** (${score < 0 ? score : `+${score}`} ${trophyEmoji})\n` +
+				`${lightningboltEmoji} Streak: **${streak}**.\n` +
+                `The #${image.IS_AI + 1} image is AI-generated.\n` +
+                `\`${image.prompt}\``;
 
 				await btn.deferUpdate();
 				await btn.editOriginal({ embeds: [{ ...embed, color, description: content }], components: resetComponents });

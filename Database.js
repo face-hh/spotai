@@ -20,7 +20,7 @@ module.exports = class State {
      * @param {Object} id The distinguishable ID of a certain data piece.
      */
 	async db_update({ data, id }) {
-		this.collection.updateOne({ id: id }, { $set: data }, { upsert: true });
+		await this.collection.updateOne({ id: id }, { $set: data }, { upsert: true });
 
 		return true;
 	}
@@ -29,7 +29,7 @@ module.exports = class State {
      * @param {Object} id The distinguishable ID of a certain data piece.
      */
 	async db_increase({ data, id }) {
-		this.collection.updateOne({ id: id }, { $inc: { score: data.score } }, { upsert: true });
+		await this.collection.updateOne({ id: id }, data, { upsert: true });
 
 		return true;
 	}
@@ -40,7 +40,11 @@ module.exports = class State {
 	async db_fetch(query) {
 		const data = await this.collection.findOne(query);
 
-		if (!data) return false;
+		if (!data) {
+			const newData = { id: query.id, streak: 0, score: 0, highestStreak: 0, gamesPlayed: 0, gamesWon: 0, gamesLost: 0 };
+			await this.collection.insertOne(newData);
+			return newData;
+		  }
 
 		return data;
 	}
