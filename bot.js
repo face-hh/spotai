@@ -51,7 +51,7 @@ client.on('ready', async () => {
 		{
 			type: ApplicationCommandTypes.CHAT_INPUT,
 			name: 'profile',
-			description: 'Check out analytics about yourself, flex them on others, or feel inferior by checking others\' profiles!',
+			description: 'Check your profile or flex it on others!',
 			options: [
 				{
 					type: ApplicationCommandOptionTypes.USER,
