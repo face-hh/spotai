@@ -88,6 +88,13 @@ client.on('ready', async () => {
 	]);
 });
 
+client.on('guildCreate', (guild) => {
+	client.guilds.get('795393018764591134').channels.get('1066395491262275694').createMessage({ content: `🟢 Joined \`${guild.name}\` with **${guild.memberCount}** members.` });
+});
+client.on('guildDelete', (guild) => {
+	client.guilds.get('795393018764591134').channels.get('1066395491262275694').createMessage({ content: `😡 Left \`${guild.name}\` with **${guild.memberCount}** members.` });
+});
+
 client.on('interactionCreate', async (interaction) => {
 	switch (interaction.type) {
 
@@ -136,7 +143,7 @@ client.on('interactionCreate', async (interaction) => {
 						},
 						{
 							name: 'Games',
-							value: `\`Won\`: ${data.gamesWon.toLocaleString()}\n\`Lost\`: ${data.gamesLost.toLocaleString()}\n\`Total\`: ${data.gamesPlayed.toLocaleString()}`,
+							value: `\`Won\`: ${data.gamesWon.toLocaleString()}\n\`Lost\`: ${data.gamesLost.toLocaleString()}\n\`Total\`: ${data.gamesPlayed.toLocaleString()} (\`${(data.gamesWon / data.gamesLost).toFixed(2)}\`)`,
 							inline: true
 						},
 					],
