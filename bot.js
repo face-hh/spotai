@@ -6,6 +6,7 @@ const { InteractionCollector } = require('oceanic-collectors');
 const draw = require('./index');
 const Helper = require('./Database');
 const package = require('./package.json');
+const badges = require('./badges');
 
 const client = new Client({ auth: process.env.TOKEN });
 const helper = new Helper({ collection: 'memory' });
@@ -15,6 +16,20 @@ const trophyEmoji = '<:trophy:1094520327071076402>';
 const lightningboltEmoji = '<:lightningbolt:1094527157172183115>';
 
 const timers = {};
+
+async function checkForBadges(data){
+	const claimed = [];
+	
+	badges.forEach((badge) => {
+		const result = badge.cost(data);
+
+		if(result) claimed.push(badge.title)
+	})
+
+	await helper.db_update({ data: { badges:[...new Set([...claimed, ...data.badges])] }, id: data.id });
+    
+	return;
+}
 
 function startTimer(collector, id) {
   if (timers[id]) clearTimeout(timers[id]);
@@ -80,6 +95,7 @@ client.on('interactionCreate', async (interaction) => {
 		await interaction.defer();
 
 		if (interaction.data.name === 'leaderboard') {
+			await helper.db_keepup();
 			const leaderboard = await helper.db_leaderboard();
 
 			const formatted = await Promise.all(leaderboard.map(async (el, i) => {
@@ -100,10 +116,8 @@ client.on('interactionCreate', async (interaction) => {
 		if (interaction.data.name === 'profile') {
 			const user = interaction.data.options.getUser("player", false) || interaction.user;
 			const data = await helper.db_fetch({ id: user.id });
+			const descBadges = badges.filter((el) => data.badges.includes(el.title)).map((el) => el.icon).join('')
 
-			if(!data.gamesWon || !data.gamesLost) return interaction.createFollowup({ content: 'User has old structure, let them know to play a game (`/spotai`) and try this command again.' })
-			
-			
 			interaction.createFollowup({
 				embeds: [{
 					thumbnail: { url: user.avatarURL('png') },
@@ -126,7 +140,7 @@ client.on('interactionCreate', async (interaction) => {
 							inline: true
 						},
 					],
-					description: ``,
+					description: descBadges,
 					footer: footer,
 				}],
 			});
@@ -136,7 +150,7 @@ client.on('interactionCreate', async (interaction) => {
 				"embeds": [
 					{
 					  "title": `Help`,
-					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nBase code made in **2 days** :)`,
+					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/profile\` - Check your profile!\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nResources used: https://srcb.in/jUAGa4V4cE\n\nBase code made in **2 days** :)`,
 					  "color": 0x00FFFF
 					}
 				  ],
@@ -244,6 +258,8 @@ client.on('interactionCreate', async (interaction) => {
 					},
 					$inc: { gamesPlayed: 1, [`games${won ? 'Won' : 'Lost'}`]: 1 }
 				} });
+
+				await checkForBadges(data);
 
 				const content = `**${trophyEmoji} ${currentScore.toLocaleString()}** (${score < 0 ? score : `+${score}`} ${trophyEmoji})\n` +
 				`${lightningboltEmoji} Streak: **${streak}**.\n` +

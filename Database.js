@@ -2,6 +2,17 @@ const mongodb = require('mongodb');
 const { MongoClient } = mongodb;
 let client;
 
+const newData = {
+	streak: 0,
+	score: 0,
+	highestStreak: 0,
+	gamesPlayed: 0,
+	gamesWon: 0,
+	gamesLost: 0,
+	badges: [],
+	betaTester: false,
+};
+
 module.exports = class State {
 	constructor({ collection }) {
 		if (!client) {
@@ -41,8 +52,12 @@ module.exports = class State {
 		const data = await this.collection.findOne(query);
 
 		if (!data) {
-			const newData = { id: query.id, streak: 0, score: 0, highestStreak: 0, gamesPlayed: 0, gamesWon: 0, gamesLost: 0 };
+			newData.id = query.id;
 			await this.collection.insertOne(newData);
+
+			delete newData['id']
+			delete newData['_id']
+
 			return newData;
 		  }
 
@@ -65,6 +80,17 @@ module.exports = class State {
 		if (!data) return false;
 
 		return data;
+	}
+
+	async db_keepup(){
+		Object.entries(newData).forEach(async (el) => {
+
+		await this.collection.updateMany({ [el[0]]: { $exists: false } }, {
+			$set: {
+				[el[0]]: el[1]
+			}
+		})
+	})
 	}
 	async db_leaderboard() {
 		const pipeline = [
