@@ -14,5 +14,13 @@ module.exports = [
         cost: (data) => {
             return data?.highestStreak >= 100;
         }
+    },
+    {
+        title: '20 Streaks',
+        icon: '<:20Streak:1098533299351195738>',
+        description: 'Surpass the 20 continous streaks!',
+        cost: (data) => {
+            return data?.highestStreak >= 20;
+        }
     }
 ]

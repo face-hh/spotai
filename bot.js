@@ -7,7 +7,6 @@ const draw = require('./index');
 const Helper = require('./Database');
 const package = require('./package.json');
 const badges = require('./badges');
-
 const client = new Client({ auth: process.env.TOKEN });
 const helper = new Helper({ collection: 'memory' });
 
@@ -85,6 +84,11 @@ client.on('ready', async () => {
 			name: 'help',
 			description: 'Information about how the game was made!',
 		},
+		{
+			type: ApplicationCommandTypes.CHAT_INPUT,
+			name: 'badges',
+			description: 'See all the badges you have and which you can get!',
+		},
 	]);
 });
 
@@ -102,20 +106,40 @@ client.on('interactionCreate', async (interaction) => {
 		await interaction.defer();
 
 		if (interaction.data.name === 'leaderboard') {
-			await helper.db_keepup();
 			const leaderboard = await helper.db_leaderboard();
 
 			const formatted = await Promise.all(leaderboard.map(async (el, i) => {
 
 				const user = await client.rest.users.get(el.id);
+				// let appended = i === 0 ? `* ### \`${i + 1}.\`` : `* \`${i + 1}.\``
+				// return `${appended} ${el.score.toLocaleString()} ${trophyEmoji} - ${user.username}`;
 				return `\`${i + 1}.\` ${el.score.toLocaleString()} ${trophyEmoji} - ${user.username}`;
-
 			}));
 
 			interaction.createFollowup({
 				embeds: [{
 					title: 'Leaderboard 🌍',
 					description: formatted.join('\n'),
+					//description: `# Leaderboard 🌍\n${formatted.join('\n')}`,
+					footer: footer,
+				}],
+			});
+		}
+		if (interaction.data.name === 'badges') {
+			const data = await helper.db_fetch({ id: interaction.user.id });
+			const fields = [];
+
+			for(let i = 0; i < badges.length; i++){
+				fields.push({
+					name: `${badges[i].icon} ${badges[i].title}`,
+					value: `${data.badges.includes(badges[i].title) ? '✅': '❌'} ${badges[i].description}`,
+					inline: true,
+				})
+			}
+			interaction.createFollowup({
+				embeds: [{
+					title: "Badges",
+					fields,
 					footer: footer,
 				}],
 			});
@@ -128,8 +152,7 @@ client.on('interactionCreate', async (interaction) => {
 			interaction.createFollowup({
 				embeds: [{
 					thumbnail: { url: user.avatarURL('png') },
-					title: user.tag,
-					url: 'https://youtube.com/facedevstuff',
+					description: descBadges,
 					fields: [
 						{
 							name: 'Trophies',
@@ -147,7 +170,9 @@ client.on('interactionCreate', async (interaction) => {
 							inline: true
 						},
 					],
-					description: descBadges,
+					title: user.tag,
+					url: 'https://youtube.com/facedevstuff',
+					//description: `# [${user.tag}](https://youtube.com/facedevstuff)\n${descBadges}`,
 					footer: footer,
 				}],
 			});
@@ -156,13 +181,17 @@ client.on('interactionCreate', async (interaction) => {
 			interaction.createFollowup({
 				"embeds": [
 					{
+					  "thumbnail": { url: client.user.avatarURL('png') },
 					  "title": `Help`,
 					  "description": `**Commands**\n\n\`/spotai\` - Start the game\n\`/profile\` - Check your profile!\n\`/leaderboard\` - See who leads globally\n\`/help\`- What you are currently reading.\n\n**Misc**\n\nMade by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n\nMade with [Oceanic](https://oceanic.ws/).\n\nSupport server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n\nResources used: https://srcb.in/jUAGa4V4cE\n\nBase code made in **2 days** :)`,
-					  "color": 0x00FFFF
+					 //"description": `# Help\n## Commands\n\n- \`/spotai\` - Start the game\n- \`/profile\` - Check your profile!\n- \`/leaderboard\` - See who leads globally\n- \`/help\`- What you are currently reading.\n\n## Misc\n\n- Made by \`Face#0981\`, [YouTube here](https://youtube.com/facedevstuff).\n- Made with [Oceanic](https://oceanic.ws/).\n- Support server [here](https://discord.gg/W98yWga6YK), you can also contribute to the bot by submitting images!\n- Resources used: https://srcb.in/jUAGa4V4cE\n- Base code made in **2 days** :)`, 
+					  "color": 0x00FFFF,
+					  "footer": footer,
 					}
 				  ],
 			});
 		}
+
 		if (interaction.data.name === 'spotai') {
 
 			const level = interaction.data.options.getString('level', false);
@@ -267,6 +296,11 @@ client.on('interactionCreate', async (interaction) => {
 				} });
 
 				await checkForBadges(data);
+
+				//const content = `# **${trophyEmoji} ${currentScore.toLocaleString()}** (${score < 0 ? score : `+${score}`} ${trophyEmoji})\n` +
+				//`* ${lightningboltEmoji} Streak: **${streak}**.\n` +
+                //`* The #${image.IS_AI + 1} image is AI-generated.\n` +
+                //`* \`${image.prompt}\``;
 
 				const content = `**${trophyEmoji} ${currentScore.toLocaleString()}** (${score < 0 ? score : `+${score}`} ${trophyEmoji})\n` +
 				`${lightningboltEmoji} Streak: **${streak}**.\n` +
