@@ -17,7 +17,7 @@ module.exports = [
     },
     {
         title: '20 Streaks',
-        icon: '<:20Streak:1098533299351195738>',
+        icon: '<:20Streak:1098540784074108959>',
         description: 'Surpass the 20 continous streaks!',
         cost: (data) => {
             return data?.highestStreak >= 20;
